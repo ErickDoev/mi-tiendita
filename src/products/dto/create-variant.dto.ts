@@ -4,5 +4,5 @@ export class CreateVariantDto {
 
     @IsString()
     @IsNotEmpty()
-    brandName: string;
+    variantName: string;
 }

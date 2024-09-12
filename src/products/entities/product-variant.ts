@@ -11,7 +11,7 @@ export class ProductVariant {
     @ManyToOne(() => Product, (product) => product.productsVariants)
     product: Product;
 
-    @ManyToOne(() => Variant, (variant) => variant)
+    @ManyToOne(() => Variant, (variant) => variant.productsVariants)
     variant: Variant;
 
     @OneToMany(() => Image, (img) => img.productVariant)

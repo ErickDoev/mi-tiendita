@@ -7,7 +7,7 @@ export class Category {
     categoryId: string;
 
     @Column('varchar')
-    category: string;
+    categoryName: string;
 
     @OneToMany(() => Product, (product) => product.category)
     products: Product[];

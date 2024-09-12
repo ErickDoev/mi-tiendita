@@ -9,6 +9,6 @@ export class Variant {
     @Column('varchar')
     variantName: string;
 
-    @OneToMany(() => ProductVariant, (pv) => pv.variant)
+    @OneToMany(() => ProductVariant, (pv) => pv.variant, { cascade: true, eager: true })
     productsVariants: ProductVariant[];
 }

@@ -3,8 +3,10 @@ import { ProductsService } from './products.service';
 import { 
   CreateProductDto, 
   UpdateProductDto, 
-  CreateBrandDto
+  CreateBrandDto,
+  CreateVariantDto
 } from './dto';
+import { CreateCategoryDto } from './dto/create-category.sto';
 
 @Controller('products')
 export class ProductsController {
@@ -40,5 +42,15 @@ export class ProductsController {
   @Post('brand')
   createBrand(@Body() createBrandDto: CreateBrandDto) {
     return this.productsService.createBrand(createBrandDto);
+  }
+
+  @Post('category')
+  createCategory(@Body() createCategoryDto: CreateCategoryDto){
+    return this.productsService.creeateCategory(createCategoryDto);
+  }
+
+  @Post('variant')
+  createVariant(@Body() createVariantDto: CreateVariantDto) {
+    return this.productsService.createVariant(createVariantDto);
   }
 }

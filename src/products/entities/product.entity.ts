@@ -9,7 +9,9 @@ export class Product {
     @PrimaryGeneratedColumn('uuid')
     productId: string;
 
-    @Column('varchar')
+    @Column('varchar', {
+        unique: true
+    })
     productName: string;
 
     @Column('int')
@@ -27,7 +29,7 @@ export class Product {
     @Column('timestamp')
     lastUpdated: Date;
 
-    @OneToMany(() => ProductVariant, (pv) => pv.product)
+    @OneToMany(() => ProductVariant, (pv) => pv.product, { cascade: true, eager: true })
     productsVariants: ProductVariant[];
 
     @ManyToOne(() => Brand, (brand) => brand.products)
@@ -36,6 +38,6 @@ export class Product {
     @ManyToOne(() => Category, (category) => category.products)
     category: Category;
 
-    @OneToMany(() => Image, (image) => image.product)
+    @OneToMany(() => Image, (image) => image.product, { cascade: true, eager: true })
     images: Image[];
 }

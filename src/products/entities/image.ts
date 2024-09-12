@@ -7,10 +7,12 @@ export class Image {
     @PrimaryGeneratedColumn('uuid')
     imageId: string;
 
-    @Column('varchar')
-    imageName: string;
+    // @Column('varchar')
+    // imageName: string;
 
-    @Column('varchar')
+    @Column('varchar', {
+        unique: true
+    })
     imageUrl: string;
 
     @ManyToOne(() => Product, (product) => product.images)
