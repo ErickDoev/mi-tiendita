@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { 
@@ -20,6 +20,8 @@ import {
 @Injectable()
 export class ProductsService {
 
+  private readonly looger = new Logger('Products');
+
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -35,15 +37,17 @@ export class ProductsService {
     private readonly imageRepository: Repository<Image>,
   ) {}
   async create(createProductDto: CreateProductDto) {
-    const { brand, category, variant, images, ...rest } = createProductDto;
-    const brandDB = await this.findOneBrand(brand);
-    if(!brandDB) throw new NotFoundException(`Brand whit id ${ variant } not found`);
-
-    const categoryDB = await this.findOneCategory(category);
-    if(!categoryDB) throw new NotFoundException(`Category whit id ${ category } not found`);
-
+    const { brand, category, variant, images, stock, ...rest } = createProductDto;
     try {
+      // Buscamos si existe el brand a insertar
+      const brandDB = await this.findOneBrand(brand);
+      if(!brandDB) throw new NotFoundException(`Brand whit id ${ variant } not found`);
+      //Buscamos si existe la category a insertar
+      const categoryDB = await this.findOneCategory(category);
+      if(!categoryDB) throw new NotFoundException(`Category whit id ${ category } not found`);
 
+      let savedProduct: Product;
+      //Si existe la variante la manejamos de una manera especial 
       if(variant) {
         const variantDB = await this.findOneVariant(variant);
         if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
@@ -55,29 +59,41 @@ export class ProductsService {
         brand: brandDB,
         category: categoryDB,
         });
-        const savedProduct = await this.productRepository.save(productDB);
+        savedProduct = await this.productRepository.save(productDB);
 
         const productVariantDB = this.productVariantRepository.create({
           product: productDB,
-          variant: variantDB
+          variant: variantDB,
+          stock: stock
         });
         await this.productVariantRepository.save(productVariantDB);
 
-        const insertPromises = [];
-        images.forEach((img) => {
-          insertPromises.push(this.imageRepository.save({ 
-            productVariant: productVariantDB,
-            imageUrl: img
-           }));
-        });
-        await Promise.all(insertPromises);
+        await this.createImagesWithVariant(images, productVariantDB);
+        // const insertPromises = [];
+        // images.forEach((img) => {
+        //   insertPromises.push(this.imageRepository.save({ 
+        //     productVariant: productVariantDB,
+        //     imageUrl: img
+        //    }));
+        // });
+        // await Promise.all(insertPromises);
 
-        return savedProduct;
+      } else {
+        const createProduct = this.productRepository.create({
+          ...rest,
+          brand: brandDB,
+          category: categoryDB,
+          stock,
+          isActive: true,
+          lastUpdated: new Date(),
+          images: images.map((img) => this.imageRepository.create({ imageUrl: img}))
+        });
+  
+        savedProduct = await this.productRepository.save(createProduct);
       }
       
+      return savedProduct; 
       
-
-
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -150,7 +166,25 @@ export class ProductsService {
     }
   }
 
+  async createImagesWithVariant(images: string[], productVariant: ProductVariant) {
+    const insertPromises = [];
+    images.forEach((img) => {
+      insertPromises.push(this.imageRepository.save({ 
+        productVariant: productVariant,
+        imageUrl: img
+       }));
+    });
+    await Promise.all(insertPromises);
+  }
+
   handleDBerrors(error: any) {
-    throw new BadRequestException(error.detail)
+    this.looger.error(error);
+    if(error?.response) {
+      throw new BadRequestException(error.response.message);
+    }
+    if(error?.detail) {
+      throw new BadRequestException(error.detail);
+    }
+    throw new BadRequestException(error);
   }
 }

@@ -14,8 +14,8 @@ export class Product {
     })
     productName: string;
 
-    @Column('int')
-    stock: number;
+    @Column('int', { nullable: true })
+    stock?: number;
 
     @Column('numeric')
     price: number;
