@@ -6,7 +6,8 @@ import {
   CreateBrandDto,
   CreateVariantDto
 } from './dto';
-import { CreateCategoryDto } from './dto/create-category.sto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -52,5 +53,12 @@ export class ProductsController {
   @Post('variant')
   createVariant(@Body() createVariantDto: CreateVariantDto) {
     return this.productsService.createVariant(createVariantDto);
+  }
+
+  @Post('add/variant')
+  createProductVariant(
+    @Body() createProductVariantDto: CreateProductVariantDto
+  ){
+    return this.productsService.createProductVariant(createProductVariantDto);
   }
 }

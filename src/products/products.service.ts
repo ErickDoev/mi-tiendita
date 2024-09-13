@@ -16,6 +16,7 @@ import {
   CreateCategoryDto,
   CreateVariantDto,
 } from './dto/';
+import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 
 @Injectable()
 export class ProductsService {
@@ -69,14 +70,6 @@ export class ProductsService {
         await this.productVariantRepository.save(productVariantDB);
 
         await this.createImagesWithVariant(images, productVariantDB);
-        // const insertPromises = [];
-        // images.forEach((img) => {
-        //   insertPromises.push(this.imageRepository.save({ 
-        //     productVariant: productVariantDB,
-        //     imageUrl: img
-        //    }));
-        // });
-        // await Promise.all(insertPromises);
 
       } else {
         const createProduct = this.productRepository.create({
@@ -175,6 +168,30 @@ export class ProductsService {
        }));
     });
     await Promise.all(insertPromises);
+  }
+
+  async createProductVariant(createProductVariantDto: CreateProductVariantDto) {
+    const { variant, product, images, stock } = createProductVariantDto;
+    try {
+
+      const variantDB = await this.variantRepository.findOneBy({ variantId: variant });
+      if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
+
+      const productDB = await this.productRepository.findOneBy({ productId: product });
+      if(!productDB) throw new NotFoundException(`Product whit id ${ variant } not found`);
+
+      const createProductVariant = this.productVariantRepository.create({
+        stock: +stock,
+        variant: variantDB,
+        product: productDB,
+        images: images.map(img => this.imageRepository.create({ imageUrl: img }))
+      });
+
+      await this.productVariantRepository.save(createProductVariant);
+
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
   }
 
   handleDBerrors(error: any) {

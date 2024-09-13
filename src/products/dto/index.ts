@@ -1,4 +1,4 @@
-export { CreateCategoryDto } from './create-category.sto';
+export { CreateCategoryDto } from './create-category.dto';
 export { CreateBrandDto } from "./create-brand.dto";
 export { CreateProductDto } from "./create-product.dto";
 export { CreateVariantDto } from "./create-variant.dto";
