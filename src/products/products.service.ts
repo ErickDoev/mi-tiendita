@@ -180,8 +180,17 @@ export class ProductsService {
       const productDB = await this.productRepository.findOneBy({ productId: product });
       if(!productDB) throw new NotFoundException(`Product whit id ${ variant } not found`);
 
+      const resp = await this.productVariantRepository.find({
+        where: {
+          product: productDB,
+          variant: variantDB
+        }
+      });
+  
+      if(resp) throw new NotFoundException(`Product ${ product } with variant ${ variant } already exist`);
+      
       const createProductVariant = this.productVariantRepository.create({
-        stock: +stock,
+        stock: stock,
         variant: variantDB,
         product: productDB,
         images: images.map(img => this.imageRepository.create({ imageUrl: img }))

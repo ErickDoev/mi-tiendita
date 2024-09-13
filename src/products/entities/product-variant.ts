@@ -1,9 +1,10 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { Product } from "./product.entity";
 import { Variant } from "./variant.entity";
 import { Image } from './image';
 
 @Entity('products_variants')
+@Unique(['product', 'variant'])
 export class ProductVariant {
     @PrimaryGeneratedColumn('uuid')
     productsVariantsId: string;
