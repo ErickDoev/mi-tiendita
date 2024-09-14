@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { 
@@ -187,24 +187,27 @@ export class ProductsService {
       const productDB = await this.productRepository.findOneBy({ product_id: product });
       if(!productDB) throw new NotFoundException(`Product whit id ${ variant } not found`);
 
-      const resp = await this.productVariantRepository.find({
+      const existingProductVariant = await this.productVariantRepository.findOne({
         where: {
           product: productDB,
           variant: variantDB
         }
       });
-  
-      if(resp) throw new NotFoundException(`Product ${ product } with variant ${ variant } already exist`);
+
+      if(existingProductVariant) throw new ConflictException(`Product with id ${product} and variant ${variant} already exists`);
       
       const createProductVariant = this.productVariantRepository.create({
         stock: stock,
         variant: variantDB,
         product: productDB,
-        images: images.map(img => this.imageRepository.create({ image_url: img }))
       });
 
-      await this.productVariantRepository.save(createProductVariant);
-
+      const productVariantDB = await this.productVariantRepository.save(createProductVariant);
+      if (images && images.length > 0) {
+        await this.createImagesWithVariant(images, productVariantDB);
+      }
+      return createProductVariant;
+      
     } catch (error) {
       this.handleDBerrors(error);
     }
