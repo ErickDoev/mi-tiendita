@@ -38,7 +38,7 @@ export class ProductsService {
     private readonly imageRepository: Repository<Image>,
   ) {}
   async create(createProductDto: CreateProductDto) {
-    const { brand, category, variant, images, stock, ...rest } = createProductDto;
+    const { brand, category, variant, images, stock, productName, ...rest } = createProductDto;
     try {
       // Buscamos si existe el brand a insertar
       const brandDB = await this.findOneBrand(brand);
@@ -55,10 +55,11 @@ export class ProductsService {
       
         const productDB = this.productRepository.create({
           ...rest,
-        isActive: true,
-        lastUpdated: new Date(),
+        product_name: productName,
         brand: brandDB,
         category: categoryDB,
+        is_active: true,
+        last_updated: new Date(),
         });
         savedProduct = await this.productRepository.save(productDB);
 
@@ -74,12 +75,13 @@ export class ProductsService {
       } else {
         const createProduct = this.productRepository.create({
           ...rest,
+          product_name: productName,
           brand: brandDB,
           category: categoryDB,
           stock,
-          isActive: true,
-          lastUpdated: new Date(),
-          images: images.map((img) => this.imageRepository.create({ imageUrl: img}))
+          is_active: true,
+          last_updated: new Date(),
+          images: images.map((img) => this.imageRepository.create({ image_url: img}))
         });
   
         savedProduct = await this.productRepository.save(createProduct);
@@ -110,7 +112,10 @@ export class ProductsService {
 
   async createBrand(createBrandDto: CreateBrandDto) {
     try {
-      const brandDB = this.brandRepository.create(createBrandDto);
+      const { brandName } = createBrandDto;
+      const brandDB = this.brandRepository.create({
+        brand_name: brandName
+      });
       return await this.brandRepository.save(brandDB);
     } catch (error) {
       this.handleDBerrors(error);
@@ -119,7 +124,7 @@ export class ProductsService {
 
   async findOneBrand(id: string) {
     try {
-      return await this.brandRepository.findOneBy({ brandId: id });
+      return await this.brandRepository.findOneBy({ brand_id: id });
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -127,7 +132,8 @@ export class ProductsService {
 
   async creeateCategory(createCategoryDto: CreateCategoryDto) {
     try {
-      const categoryDB = this.categoryRepository.create(createCategoryDto);
+      const { categoryName } = createCategoryDto;
+      const categoryDB = this.categoryRepository.create({ category_name: categoryName });
       return await this.categoryRepository.save(categoryDB);
     } catch (error) {
       this.handleDBerrors(error);
@@ -136,7 +142,7 @@ export class ProductsService {
 
   async findOneCategory(id: string) {
     try {
-      return await this.categoryRepository.findOneBy({ categoryId: id });
+      return await this.categoryRepository.findOneBy({ category_id: id });
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -144,7 +150,8 @@ export class ProductsService {
 
   async createVariant(createVariantDto: CreateVariantDto) {
     try {
-      const variantDB = this.variantRepository.create(createVariantDto);
+      const { variantName } = createVariantDto;
+      const variantDB = this.variantRepository.create({ variant_name: variantName });
       return await this.variantRepository.save(variantDB);
     } catch (error) {
       this.handleDBerrors(error);
@@ -153,7 +160,7 @@ export class ProductsService {
 
   async findOneVariant(id: string) {
     try {
-      return await this.variantRepository.findOneBy({ variantId: id });
+      return await this.variantRepository.findOneBy({ variant_id: id });
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -163,8 +170,8 @@ export class ProductsService {
     const insertPromises = [];
     images.forEach((img) => {
       insertPromises.push(this.imageRepository.save({ 
-        productVariant: productVariant,
-        imageUrl: img
+        product_variant: productVariant,
+        image_url: img
        }));
     });
     await Promise.all(insertPromises);
@@ -174,10 +181,10 @@ export class ProductsService {
     const { variant, product, images, stock } = createProductVariantDto;
     try {
 
-      const variantDB = await this.variantRepository.findOneBy({ variantId: variant });
+      const variantDB = await this.variantRepository.findOneBy({ variant_id: variant });
       if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
 
-      const productDB = await this.productRepository.findOneBy({ productId: product });
+      const productDB = await this.productRepository.findOneBy({ product_id: product });
       if(!productDB) throw new NotFoundException(`Product whit id ${ variant } not found`);
 
       const resp = await this.productVariantRepository.find({
@@ -193,7 +200,7 @@ export class ProductsService {
         stock: stock,
         variant: variantDB,
         product: productDB,
-        images: images.map(img => this.imageRepository.create({ imageUrl: img }))
+        images: images.map(img => this.imageRepository.create({ image_url: img }))
       });
 
       await this.productVariantRepository.save(createProductVariant);

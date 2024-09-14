@@ -4,10 +4,10 @@ import { Product } from "./product.entity";
 @Entity('categories')
 export class Category {
     @PrimaryGeneratedColumn('uuid')
-    categoryId: string;
+    category_id: string;
 
     @Column('varchar')
-    categoryName: string;
+    category_name: string;
 
     @OneToMany(() => Product, (product) => product.category)
     products: Product[];

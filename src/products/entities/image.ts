@@ -1,21 +1,23 @@
-import { Check, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Product } from "./product.entity";
 import { ProductVariant } from "./product-variant";
 
 @Entity('images')
-@Check(`("productProductId" IS NOT NULL AND "productVariantProductsVariantsId" IS NULL) OR ("productProductId" IS NULL AND "productVariantProductsVariantsId" IS NOT NULL)`)
+@Check(`("product_id" IS NOT NULL AND "product_variant_id" IS NULL) OR ("product_id" IS NULL AND "product_variant_id" IS NOT NULL)`)
 export class Image {
     @PrimaryGeneratedColumn('uuid')
-    imageId: string;
+    image_id: string;
 
     @Column('varchar', {
         unique: true
     })
-    imageUrl: string;
+    image_url: string;
 
     @ManyToOne(() => Product, (product) => product.images, { nullable: true })
+    @JoinColumn({ name: 'product_id' })
     product: Product;
 
     @ManyToOne(() => ProductVariant, (pv) => pv.images, { nullable: true })
-    productVariant: ProductVariant;
+    @JoinColumn({ name:'product_variant_id' })
+    product_variant: ProductVariant;
 }

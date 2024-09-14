@@ -1,23 +1,25 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { Product } from "./product.entity";
 import { Variant } from "./variant.entity";
 import { Image } from './image';
 
-@Entity('products_variants')
+@Entity('product_variants')
 @Unique(['product', 'variant'])
 export class ProductVariant {
     @PrimaryGeneratedColumn('uuid')
-    productsVariantsId: string;
+    product_variant_id: string;
 
     @Column('int')
     stock: number;
 
-    @ManyToOne(() => Product, (product) => product.productsVariants)
+    @ManyToOne(() => Product, (product) => product.product_variants)
+    @JoinColumn({ name: 'product_id' })
     product: Product;
 
-    @ManyToOne(() => Variant, (variant) => variant.productsVariants)
+    @ManyToOne(() => Variant, (variant) => variant.product_variants)
+    @JoinColumn({ name: 'variant_id' })
     variant: Variant;
 
-    @OneToMany(() => Image, (img) => img.productVariant)
+    @OneToMany(() => Image, (img) => img.product_variant)
     images: Image[];
 }

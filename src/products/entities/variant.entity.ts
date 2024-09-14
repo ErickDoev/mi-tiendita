@@ -4,11 +4,11 @@ import { ProductVariant } from "./product-variant";
 @Entity('variants')
 export class Variant {
     @PrimaryGeneratedColumn('uuid')
-    variantId: string;
+    variant_id: string;
 
     @Column('varchar')
-    variantName: string;
+    variant_name: string;
 
     @OneToMany(() => ProductVariant, (pv) => pv.variant, { cascade: true, eager: true })
-    productsVariants: ProductVariant[];
+    product_variants: ProductVariant[];
 }
