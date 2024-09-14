@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, QueryRunner, Repository } from 'typeorm';
 import { 
   Brand, 
   Category, 
@@ -24,6 +24,7 @@ export class ProductsService {
   private readonly looger = new Logger('Products');
 
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Variant)
@@ -179,15 +180,20 @@ export class ProductsService {
 
   async createProductVariant(createProductVariantDto: CreateProductVariantDto) {
     const { variant, product, images, stock } = createProductVariantDto;
+
+    const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
 
-      const variantDB = await this.variantRepository.findOneBy({ variant_id: variant });
+      const variantDB = await queryRunner.manager.findOne( Variant, { where: { variant_id: variant }});
       if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
 
-      const productDB = await this.productRepository.findOneBy({ product_id: product });
+      const productDB = await queryRunner.manager.findOne(Product, { where: { product_id: product }});
       if(!productDB) throw new NotFoundException(`Product whit id ${ variant } not found`);
 
-      const existingProductVariant = await this.productVariantRepository.findOne({
+      const existingProductVariant = await queryRunner.manager.findOne(ProductVariant, {
         where: {
           product: productDB,
           variant: variantDB
@@ -196,20 +202,37 @@ export class ProductsService {
 
       if(existingProductVariant) throw new ConflictException(`Product with id ${product} and variant ${variant} already exists`);
       
-      const createProductVariant = this.productVariantRepository.create({
+      const createProductVariant = queryRunner.manager.create(ProductVariant, {
         stock: stock,
         variant: variantDB,
         product: productDB,
       });
 
-      const productVariantDB = await this.productVariantRepository.save(createProductVariant);
+      const productVariantDB = await queryRunner.manager.save(ProductVariant, createProductVariant);
+
       if (images && images.length > 0) {
-        await this.createImagesWithVariant(images, productVariantDB);
+        for (const imageUrl of images) {
+          const newImage = queryRunner.manager.create(Image, {
+            image_url: imageUrl,
+            product_variant: productVariantDB,
+          });
+          await queryRunner.manager.save(Image, newImage);
+        }
       }
-      return createProductVariant;
+
+      // Confirmar la transacción (commit)
+      await queryRunner.commitTransaction();
+
+      // Retornar el productVariant creado
+      return productVariantDB;
       
     } catch (error) {
+      // Si ocurre un error, revertir la transacción (rollback)
+      await queryRunner.rollbackTransaction();
       this.handleDBerrors(error);
+    } finally {
+      // Liberar el queryRunner después de finalizar la transacción
+      await queryRunner.release();
     }
   }
 
