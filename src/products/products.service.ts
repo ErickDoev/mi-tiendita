@@ -39,7 +39,7 @@ export class ProductsService {
     private readonly imageRepository: Repository<Image>,
   ) {}
   async create(createProductDto: CreateProductDto) {
-    const { brand, category, variant, images, stock, productName, ...rest } = createProductDto;
+    const { brand, category, variant, images = [], stock, productName, ...rest } = createProductDto;
     try {
       // Buscamos si existe el brand a insertar
       const brandDB = await this.findOneBrand(brand);
@@ -48,47 +48,28 @@ export class ProductsService {
       const categoryDB = await this.findOneCategory(category);
       if(!categoryDB) throw new NotFoundException(`Category whit id ${ category } not found`);
 
-      let savedProduct: Product;
-      //Si existe la variante la manejamos de una manera especial 
-      if(variant) {
-        const variantDB = await this.findOneVariant(variant);
-        if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
-      
-        const productDB = this.productRepository.create({
-          ...rest,
+      const variantDB = await this.findOneVariant(variant);
+      if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
+    
+      const createProduct = this.productRepository.create({
+        ...rest,
         product_name: productName,
         brand: brandDB,
         category: categoryDB,
         is_active: true,
         last_updated: new Date(),
-        });
-        savedProduct = await this.productRepository.save(productDB);
-
-        const productVariantDB = this.productVariantRepository.create({
-          product: productDB,
-          variant: variantDB,
-          stock: stock
-        });
-        await this.productVariantRepository.save(productVariantDB);
-
-        await this.createImagesWithVariant(images, productVariantDB);
-
-      } else {
-        const createProduct = this.productRepository.create({
-          ...rest,
-          product_name: productName,
-          brand: brandDB,
-          category: categoryDB,
-          stock,
-          is_active: true,
-          last_updated: new Date(),
-          images: images.map((img) => this.imageRepository.create({ image_url: img}))
-        });
-  
-        savedProduct = await this.productRepository.save(createProduct);
-      }
+      });
       
-      return savedProduct; 
+      const productBD = await this.productRepository.save(createProduct);
+      console.log(productBD.product_id);
+      
+      const payload: CreateProductVariantDto = {
+        stock,
+        product: productBD.product_id,
+        variant: variantDB.variant_id,
+        images
+      }
+      await this.createProductVariant(payload);
       
     } catch (error) {
       this.handleDBerrors(error);

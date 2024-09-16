@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateProductDto {
     @IsString()
@@ -15,7 +15,7 @@ export class CreateProductDto {
     description?: string;
 
     @IsString()
-    @IsOptional()
+    @IsNotEmpty()
     variant: string;
     
     @IsString()

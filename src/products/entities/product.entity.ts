@@ -14,9 +14,6 @@ export class Product {
     })
     product_name: string;
 
-    @Column('int', { nullable: true })
-    stock?: number;
-
     @Column('numeric')
     price: number;
 
@@ -40,6 +37,6 @@ export class Product {
     @JoinColumn({ name: 'category_id' })
     category: Category;
 
-    @OneToMany(() => Image, (image) => image.product, { cascade: true, eager: true })
-    images: Image[];
+    // @OneToMany(() => Image, (image) => image.product, { cascade: true, eager: true })
+    // images: Image[];
 }
