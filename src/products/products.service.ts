@@ -39,19 +39,25 @@ export class ProductsService {
     private readonly imageRepository: Repository<Image>,
   ) {}
   async create(createProductDto: CreateProductDto) {
+
     const { brand, category, variant, images = [], stock, productName, ...rest } = createProductDto;
+
+    const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       // Buscamos si existe el brand a insertar
       const brandDB = await this.findOneBrand(brand);
       if(!brandDB) throw new NotFoundException(`Brand whit id ${ variant } not found`);
-      //Buscamos si existe la category a insertar
+      // Buscamos si existe la category a insertar
       const categoryDB = await this.findOneCategory(category);
       if(!categoryDB) throw new NotFoundException(`Category whit id ${ category } not found`);
-
+      // Buscamos si existe la variante a insertar
       const variantDB = await this.findOneVariant(variant);
       if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
-    
-      const createProduct = this.productRepository.create({
+      // Creamos el producto
+      const createProduct = queryRunner.manager.create(Product ,{
         ...rest,
         product_name: productName,
         brand: brandDB,
@@ -59,20 +65,46 @@ export class ProductsService {
         is_active: true,
         last_updated: new Date(),
       });
-      
-      const productBD = await this.productRepository.save(createProduct);
-      console.log(productBD.product_id);
-      
-      const payload: CreateProductVariantDto = {
-        stock,
-        product: productBD.product_id,
-        variant: variantDB.variant_id,
-        images
+      // Cargamos el productos en base de datos
+      const productDB = await queryRunner.manager.save(Product ,createProduct);
+      //Buscamos si el producto ya tiene una categoria previamente cargada
+      const existingProductVariant = await queryRunner.manager.findOne(ProductVariant, {
+        where: {
+          product: productDB,
+          variant: variantDB
+        }
+      });
+      // Si existe el producto con la categoria lanzamos un error
+      if(existingProductVariant) throw new ConflictException(`Product with id ${productDB.product_id} and variant ${variant} already exists`);
+      // Creamos la variante a insertar
+      const createProductVariant = queryRunner.manager.create(ProductVariant, {
+        stock: stock,
+        variant: variantDB,
+        product: productDB,
+      });
+      // Cargamos la variante con las imagenes en BD
+      const productVariantDB = await queryRunner.manager.save(ProductVariant, createProductVariant);
+
+      if (images && images.length > 0) {
+        for (const imageUrl of images) {
+          const newImage = queryRunner.manager.create(Image, {
+            image_url: imageUrl,
+            product_variant: productVariantDB,
+          });
+          await queryRunner.manager.save(Image, newImage);
+        }
       }
-      await this.createProductVariant(payload);
+      // Si todo sale bien se hace el commit
+      await queryRunner.commitTransaction();
+      return productDB;
       
     } catch (error) {
+      // sino se revierten cambios
+      await queryRunner.rollbackTransaction();
       this.handleDBerrors(error);
+    } finally {
+      // se libera al query runner
+      await queryRunner.release();
     }
   }
 
