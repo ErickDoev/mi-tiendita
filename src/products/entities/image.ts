@@ -1,5 +1,4 @@
 import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Product } from "./product.entity";
 import { ProductVariant } from "./product-variant";
 
 @Entity('images')
@@ -13,11 +12,7 @@ export class Image {
     })
     image_url: string;
 
-    // @ManyToOne(() => Product, (product) => product.images, { nullable: true })
-    // @JoinColumn({ name: 'product_id' })
-    // product: Product;
-
-    @ManyToOne(() => ProductVariant, (pv) => pv.images, { nullable: true })
+    @ManyToOne(() => ProductVariant, (pv) => pv.images, { nullable: true, eager: true, cascade: true })
     @JoinColumn({ name:'product_variant_id' })
     product_variant: ProductVariant;
 }

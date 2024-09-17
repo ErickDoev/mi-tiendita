@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, QueryRunner, Repository } from 'typeorm';
+import { DataSource, In, QueryBuilder, QueryRunner, Repository } from 'typeorm';
 import { 
   Brand, 
   Category, 
@@ -108,8 +108,24 @@ export class ProductsService {
     }
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll() {
+    const products = await this.productRepository
+      .createQueryBuilder('p')
+      .innerJoinAndSelect('p.product_variants', 'p2') // Relación con product_variants
+      .innerJoinAndSelect('p2.variant', 'p3') // Relación con variants
+      .select([
+        'p.product_id', // Campos de la tabla products
+        'p.product_name',
+        'p.price',
+        'p.description',
+        'p.is_active',
+        'p3.variant_name', // Campos de la tabla variants
+        'p2.stock' // Campo de la tabla product_variants
+      ])
+      .orderBy('p.product_id')
+      .getMany();
+
+    return products;
   }
 
   findOne(id: number) {
@@ -259,4 +275,5 @@ export class ProductsService {
     }
     throw new BadRequestException(error);
   }
+
 }
