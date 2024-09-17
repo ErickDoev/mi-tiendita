@@ -111,16 +111,18 @@ export class ProductsService {
   async findAll() {
     const products = await this.productRepository
       .createQueryBuilder('p')
-      .innerJoinAndSelect('p.product_variants', 'p2') // Relación con product_variants
-      .innerJoinAndSelect('p2.variant', 'p3') // Relación con variants
+      .innerJoinAndSelect('p.product_variants', 'pv') // Relación con product_variants
+      .innerJoinAndSelect('pv.variant', 'v') // Relación con variants
+      .innerJoinAndSelect('pv.images','i')
       .select([
         'p.product_id', // Campos de la tabla products
         'p.product_name',
         'p.price',
         'p.description',
         'p.is_active',
-        'p3.variant_name', // Campos de la tabla variants
-        'p2.stock' // Campo de la tabla product_variants
+        'v.variant_name', // Campos de la tabla variants
+        'pv.stock', // Campo de la tabla product_variants
+        'i.image_url'
       ])
       .orderBy('p.product_id')
       .getMany();
