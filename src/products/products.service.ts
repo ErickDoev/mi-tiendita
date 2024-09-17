@@ -130,8 +130,27 @@ export class ProductsService {
     return products;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const products = await this.productRepository
+      .createQueryBuilder('p')
+      .innerJoinAndSelect('p.product_variants', 'pv') // Relación con product_variants
+      .innerJoinAndSelect('pv.variant', 'v') // Relación con variants
+      .innerJoinAndSelect('pv.images','i')
+      .select([
+        'p.product_id', // Campos de la tabla products
+        'p.product_name',
+        'p.price',
+        'p.description',
+        'p.is_active',
+        'v.variant_name', // Campos de la tabla variants
+        'pv.stock', // Campo de la tabla product_variants
+        'i.image_url'
+      ])
+      .where('p.product_id = :id', { id })
+      .orderBy('p.product_id')
+      .getMany();
+
+    return products;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
