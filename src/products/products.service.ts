@@ -15,6 +15,7 @@ import {
   UpdateProductDto,
   CreateCategoryDto,
   CreateVariantDto,
+  CreateImageDto
 } from './dto/';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 
@@ -144,7 +145,8 @@ export class ProductsService {
         'p.is_active',
         'v.variant_name', // Campos de la tabla variants
         'pv.stock', // Campo de la tabla product_variants
-        'i.image_url'
+        'i.image_url',
+        'pv.product_variant_id'
       ])
       .where('p.product_id = :id', { id })
       .orderBy('p.product_id')
@@ -282,6 +284,37 @@ export class ProductsService {
       this.handleDBerrors(error);
     } finally {
       // Liberar el queryRunner después de finalizar la transacción
+      await queryRunner.release();
+    }
+  }
+
+  async createImage(id: string, createImageDto: CreateImageDto) {
+
+    const { images } = createImageDto;
+
+    const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const productVariantBD = await queryRunner.manager.findOne(ProductVariant, { where: { product_variant_id: id }});
+      if(!productVariantBD) throw new NotFoundException(`Product Variant whit id ${ id } not found`);
+
+      if (images && images.length > 0) {
+        for (const imageUrl of images) {
+          const newImage = queryRunner.manager.create(Image, {
+            image_url: imageUrl,
+            product_variant: productVariantBD,
+          });
+          await queryRunner.manager.save(Image, newImage);
+        }
+      }
+      await queryRunner.commitTransaction();
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      this.handleDBerrors(error);
+    } finally {
       await queryRunner.release();
     }
   }
