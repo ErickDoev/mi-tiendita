@@ -219,17 +219,6 @@ export class ProductsService {
     }
   }
 
-  async createImagesWithVariant(images: string[], productVariant: ProductVariant) {
-    const insertPromises = [];
-    images.forEach((img) => {
-      insertPromises.push(this.imageRepository.save({ 
-        product_variant: productVariant,
-        image_url: img
-       }));
-    });
-    await Promise.all(insertPromises);
-  }
-
   async createProductVariant(createProductVariantDto: CreateProductVariantDto) {
     const { variant, product, images, stock } = createProductVariantDto;
 
@@ -310,7 +299,7 @@ export class ProductsService {
         }
       }
       await queryRunner.commitTransaction();
-
+      return productVariantBD;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.handleDBerrors(error);
