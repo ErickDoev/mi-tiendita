@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Product } from "./product.entity";
 import { Variant } from "./variant.entity";
 import { Image } from './image';
+import { Favorite, ShoppingCart } from "src/users/entities";
 
 @Entity('product_variants')
 @Unique(['product', 'variant'])
@@ -22,4 +23,10 @@ export class ProductVariant {
 
     @OneToMany(() => Image, (img) => img.product_variant)
     images: Image[];
+
+    @OneToMany(() => Favorite, (fav) => fav.productVariant)
+    favorite: Favorite[];
+
+    @OneToMany(() => ShoppingCart, (fav) => fav.productVariant)
+    shoppingCart: ShoppingCart[];
 }

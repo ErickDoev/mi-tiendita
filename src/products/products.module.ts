@@ -10,6 +10,7 @@ import {
   Brand, 
   Image 
 } from './entities/';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   controllers: [ProductsController],
@@ -22,7 +23,8 @@ import {
       Category,
       Brand,
       Image
-    ])
+    ]),
+    UsersModule
   ],
   exports: [
     TypeOrmModule,
