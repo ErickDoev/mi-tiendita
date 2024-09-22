@@ -3,6 +3,7 @@ import { Product } from "./product.entity";
 import { Variant } from "./variant.entity";
 import { Image } from './image';
 import { Favorite, ShoppingCart } from "src/users/entities";
+import { OrderProduct } from "src/orders/entities/order_products.entity";
 
 @Entity('product_variants')
 @Unique(['product', 'variant'])
@@ -29,4 +30,7 @@ export class ProductVariant {
 
     @OneToMany(() => ShoppingCart, (fav) => fav.productVariant)
     shoppingCart: ShoppingCart[];
+
+    @OneToMany(() => OrderProduct, op => op.productVariant)
+    orderProducts: OrderProduct[];
 }

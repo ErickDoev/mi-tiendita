@@ -16,6 +16,6 @@ export class ShoppingCart {
     @JoinColumn({ name: 'product_variant_id' })
     productVariant: ProductVariant;
 
-    @Column({ nullable: false })
+    @Column('int', { nullable: false })
     quantity: number;
 }

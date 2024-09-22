@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { Gender, Role, ShoppingCart } from ".";
 import { Favorite } from "./favorites.entity";
 import { Address } from "src/addresses/entities";
+import { Order } from "src/orders/entities/order.entity";
 
 @Entity('users')
 export class User {
@@ -51,5 +52,8 @@ export class User {
 
     @OneToMany(() => Address, address => address.user)
     address: Address[];
+
+    @OneToMany(() => Order, order => order.user)
+    order: Order[];
     
 }
