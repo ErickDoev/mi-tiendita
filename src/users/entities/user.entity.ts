@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Gender, Role, ShoppingCart } from ".";
 import { Favorite } from "./favorites.entity";
+import { Address } from "src/addresses/entities";
 
 @Entity('users')
 export class User {
@@ -48,5 +49,7 @@ export class User {
     @OneToMany(() => ShoppingCart, (fav) => fav.user)
     shoppingCart: ShoppingCart[];
 
-    shopping_cart_id: string;
+    @OneToMany(() => Address, address => address.user)
+    address: Address[];
+    
 }
