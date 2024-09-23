@@ -27,8 +27,8 @@ export class User {
     @Column('bool')
     is_active: boolean;
 
-    @Column('date')
-    birthday: Date;
+    @Column('date', { nullable: true })
+    birthday?: Date;
 
     @Column('varchar')
     email: string;
@@ -38,11 +38,11 @@ export class User {
 
     @ManyToOne(() => Gender, (gender) => gender.user)
     @JoinColumn({ name: 'gender_id' })
-    gender: string;
+    gender: Gender;
 
     @ManyToOne(() => Role, (role) => role.user)
     @JoinColumn({ name: 'role_id' })
-    role: string;
+    role: Role;
 
     @OneToMany(() => Favorite, (fav) => fav.user)
     favorite: Favorite[];
