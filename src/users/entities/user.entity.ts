@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Gender, Role, ShoppingCart } from ".";
 import { Favorite } from "./favorites.entity";
 import { Address } from "src/addresses/entities";
@@ -55,5 +55,15 @@ export class User {
 
     @OneToMany(() => Order, order => order.user)
     order: Order[];
+
+    @BeforeInsert()
+    checkFieldBeforeInsert() {
+        this.email = this.email.toLowerCase().trim();
+    }
+
+    @BeforeUpdate()
+    checkFieldBeforeUpdate() {
+        this.checkFieldBeforeInsert();
+    }
     
 }
