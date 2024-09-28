@@ -28,7 +28,10 @@ export class UsersService {
       const genderDB = await this.genderRepository.findOneBy({ gender_id: gender });
       if(!genderDB) throw new NotFoundException(`Gender whit id ${ gender } not found`);
 
-      const roleDB = await this.roleRepository.findOneBy({ role_id: '916f79e0-4ee4-4c31-a112-11ad43ee073d' });
+      const roleDB = await this.roleRepository.findOne({
+        where: { role_name: 'user' }
+      });
+
       if(!roleDB) throw new NotFoundException(`Role whit id ${ gender } not found`);
 
       const createUser = this.userRepository.create({
@@ -42,6 +45,7 @@ export class UsersService {
         email: email,
         password: bcrypt.hashSync(password, 10 ),
         role: roleDB,
+        ...rest
       });
 
       return await this.userRepository.save(createUser);
@@ -55,8 +59,16 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOneByEmail(email: string) {
+    try {
+      return this.userRepository.findOne({
+        where: { email },
+        select: { email: true, password: true, user_id: true },
+        relations: { role: true }
+      });
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

@@ -30,7 +30,9 @@ export class User {
     @Column('date', { nullable: true })
     birthday?: Date;
 
-    @Column('varchar')
+    @Column('varchar', {
+        unique: true
+    })
     email: string;
 
     @Column('varchar')

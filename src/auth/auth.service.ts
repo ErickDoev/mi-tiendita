@@ -1,26 +1,66 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { JwtPayload } from './interfaces';
+import { UsersService } from 'src/users/users.service';
+import { LogInDto } from './dto/logIn.dto';
+import * as  bcrypt from 'bcrypt';
 
 
 @Injectable()
 export class AuthService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+
+  private readonly looger = new Logger('Products');
+
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userService: UsersService,
+  ){}
+  async create(createUserDto: CreateUserDto) {
+    const user = await this.userService.create(createUserDto);
+    return {
+      ...user,
+      token: this.getJtwToken({ id: user.user_id, role: user.role.role_name }),
+    }
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async logIn(logInDto: LogInDto) {
+    const { email, password } = logInDto;
+    try {
+      const user = await this.userService.findOneByEmail(email);
+      if(!user) throw new NotFoundException(`User whit email ${ email } not found`);
+
+      if(!bcrypt.compareSync(password, user.password)){
+        throw new UnauthorizedException('Credentials are not valid');
+      }
+      delete user.password
+      return {
+        ...user,
+        token: this.getJtwToken({id: user.user_id, role: user.role.role_id})
+      }
+      
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  private getJtwToken(payload: JwtPayload){
+    try {
+      const token = this.jwtService.sign( payload );
+      return token;
+    } catch (error) {
+      console.log('Error :: ', error);
+    }
   }
 
-  // update(id: number, updateAuthDto: UpdateAuthDto) {
-  //   return `This action updates a #${id} auth`;
-  // }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  handleDBerrors(error: any) {
+    this.looger.error(error);
+    if(error?.response) {
+      throw new BadRequestException(error.response.message);
+    }
+    if(error?.detail) {
+      throw new BadRequestException(error.detail);
+    }
+    throw new BadRequestException(error);
   }
 }
