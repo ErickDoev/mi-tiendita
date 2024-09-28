@@ -59,13 +59,37 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOneByEmail(email: string) {
+  async findProfile(id: string) {
     try {
-      return this.userRepository.findOne({
+      const user = await this.userRepository.findOne({
+        where: { user_id: id },
+        select: {
+          user_id: true, 
+          user_name: true, 
+          first_last_name: true, 
+          second_last_name: true,
+          birthday: true,
+          email: true,
+          phone_number: true,
+        },
+        relations: {
+          gender: true
+        }
+      });
+      return user;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async findOneByEmail(email: string) {
+    try {
+      const user= await this.userRepository.findOne({
         where: { email },
         select: { email: true, password: true, user_id: true },
         relations: { role: true }
       });
+      return user;
     } catch (error) {
       this.handleDBerrors(error);
     }
