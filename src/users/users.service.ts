@@ -136,6 +136,7 @@ export class UsersService {
           'p.product_name',
           'p.price',
           'b.brand_name',       // Campo de brands
+          'v.variant_id',
           'v.variant_name',     // Campo de variants
           'pv.stock',           // Campo de product_variants
           'u.user_id',          // Campo de users
@@ -143,7 +144,7 @@ export class UsersService {
         ])
         .where('u.user_id = :userId', { userId }) // Condición WHERE para filtrar por el user_id
         .orderBy('p.product_name')
-        .getMany();
+        .getRawMany();
       
       return products;
     } catch (error) {
@@ -151,11 +152,26 @@ export class UsersService {
     }
   }
 
+  async removeUserFavorite(userId: string, productId: string, variantId: string) {
+    try {
+      const userDB = await this.findUser(userId);
+      const productDB = await this.producService.findOneProduct(productId);
+      const variantDB = await this.producService.findOneVariant(variantId);
+      const pv = await this.producService.findOneProductVariant(productDB, variantDB);
+
+      const res = this.favoriteRepository.delete({ user: userDB, productVariant: pv});
+
+      return res;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
   async findUser(userId: string){
     try {
-      const user = await this.userRepository.findOneBy({ user_id: userId });
-      if(!user) throw new NotFoundException(`User whit id ${ userId } not found`);
-      return user;
+      const userDB = await this.userRepository.findOneBy({ user_id: userId });
+      if(!userDB) throw new NotFoundException(`User whit id ${ userId } not found`);
+      return userDB;
     } catch (error) {
       this.handleDBerrors(error);
     }

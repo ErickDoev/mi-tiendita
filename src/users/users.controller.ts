@@ -24,9 +24,14 @@ export class UsersController {
     return this.usersService.findProfile(id);
   }
 
-  @Get(':id/favorites')
-  findUserFavorites(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.findUserFavorites(id);
+  @Get(':userId/favorites')
+  findUserFavorites(@Param('userId', ParseUUIDPipe) userId: string) {
+    return this.usersService.findUserFavorites(userId);
+  }
+
+  @Delete(':userId/favorite/product/:productId/variant/:variantId/delete')
+  removeUserFavorite(@Param('userId', ParseUUIDPipe)userId: string, @Param('productId', ParseUUIDPipe) productId: string, @Param('variantId', ParseUUIDPipe) variantId: string) {
+    return this.usersService.removeUserFavorite(userId, productId, variantId);
   }
 
   @Post(':id/favorite')
