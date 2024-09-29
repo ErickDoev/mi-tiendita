@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateGenderDto, CreateRoleDto } from './dto';
+import { UpdateWishListDto } from './dto/update-wish-list.dto';
 
 @Controller('users')
 export class UsersController {
@@ -19,8 +20,18 @@ export class UsersController {
   }
 
   @Get(':id/profile')
-  findOne(@Param('id') id: string) {
+  findProfile(@Param('id', ParseUUIDPipe) id: string) {
     return this.usersService.findProfile(id);
+  }
+
+  @Get(':id/favorites')
+  findUserFavorites(@Param('id', ParseUUIDPipe) id: string) {
+    return this.usersService.findUserFavorites(id);
+  }
+
+  @Post(':id/favorite')
+  updateWishList(@Body() updateWishListDto: UpdateWishListDto) {
+    return this.usersService.updateWishList(updateWishListDto);
   }
 
   @Patch(':id')

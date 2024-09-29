@@ -15,6 +15,6 @@ export class Favorite {
     @JoinColumn({ name: 'product_variant_id' })
     productVariant: ProductVariant;
 
-    @Column('int')
-    quantity: number;
+    // @Column('int')
+    // quantity: number;
 }

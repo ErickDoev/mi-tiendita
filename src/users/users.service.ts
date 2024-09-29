@@ -3,9 +3,11 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateGenderDto, CreateRoleDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Gender, Role, User } from './entities';
+import { Favorite, Gender, Role, User } from './entities';
 import { Repository } from 'typeorm';
 import * as  bcrypt from 'bcrypt';
+import { UpdateWishListDto } from './dto/update-wish-list.dto';
+import { ProductsService } from 'src/products/products.service';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +21,9 @@ export class UsersService {
     private readonly genderRepository: Repository<Gender>,
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectRepository(Favorite)
+    private readonly favoriteRepository: Repository<Favorite>,
+    private readonly producService: ProductsService
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -89,6 +94,53 @@ export class UsersService {
         select: { email: true, password: true, user_id: true },
         relations: { role: true }
       });
+      return user;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async updateWishList(updateListWishDto: UpdateWishListDto) {
+    const { userId, variantId, productId } = updateListWishDto;
+    try {
+      const userDB = await this.findUser(userId);
+      const productDB = await this.producService.findOneProduct(productId);
+      const variant = await this.producService.findOneVariant(variantId);
+      const productVariant = await this.producService.findOneProductVariant(productDB, variant);
+
+      const createrFavorite = this.favoriteRepository.create({
+        user: userDB,
+        productVariant
+      });
+      
+      return this.favoriteRepository.save(createrFavorite);
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async findUserFavorites(id: string) {
+    try {
+      //TODO: checar y mejorar esto
+      const user = await this.findUser(id);
+      const favs = await this.favoriteRepository.find({
+        where: {
+          user
+        },
+        relations: {
+          productVariant: true
+        }
+      });
+      return favs;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async findUser(userId: string){
+    try {
+      const user = await this.userRepository.findOneBy({ user_id: userId });
+      if(!user) throw new NotFoundException(`User whit id ${ userId } not found`);
       return user;
     } catch (error) {
       this.handleDBerrors(error);

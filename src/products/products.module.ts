@@ -23,12 +23,11 @@ import { UsersModule } from 'src/users/users.module';
       Category,
       Brand,
       Image
-    ]),
-    UsersModule
+    ])
   ],
   exports: [
     TypeOrmModule,
-    ProductsModule
+    ProductsService
   ]
 })
 export class ProductsModule {}

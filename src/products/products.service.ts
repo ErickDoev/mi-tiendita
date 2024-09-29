@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, QueryBuilder, QueryRunner, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { 
   Brand, 
   Category, 
@@ -155,6 +155,16 @@ export class ProductsService {
     return products;
   }
 
+  async findOneProduct(productId: string) {
+    try {
+    const product =  await this.productRepository.findOneBy({ product_id: productId });
+    if(!product) throw new NotFoundException(`Product with id ${productId} not found`);
+    return product;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
   update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
@@ -213,7 +223,9 @@ export class ProductsService {
 
   async findOneVariant(id: string) {
     try {
-      return await this.variantRepository.findOneBy({ variant_id: id });
+      const variant =  await this.variantRepository.findOneBy({ variant_id: id });
+      if(!variant) throw new NotFoundException(`Variant with id ${id} not found`);
+      return variant;
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -275,6 +287,21 @@ export class ProductsService {
       // Liberar el queryRunner después de finalizar la transacción
       await queryRunner.release();
     }
+  }
+
+  async findOneProductVariant(product: Product, variant: Variant) {
+   try {
+    const productVariant = await this.productVariantRepository.findOne({
+      where: {
+        product,
+        variant
+      }
+    });
+    if(!productVariant) throw new NotFoundException(`Product with variant ${ variant } not found`);
+    return productVariant;
+   } catch (error) {
+    this.handleDBerrors(error);
+   } 
   }
 
   async createImage(id: string, createImageDto: CreateImageDto) {

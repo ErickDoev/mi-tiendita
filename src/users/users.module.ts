@@ -11,7 +11,8 @@ import { ProductsModule } from 'src/products/products.module';
   controllers: [UsersController],
   providers: [UsersService],
   imports: [
-    TypeOrmModule.forFeature([User, Gender, Role, ShoppingCart, Favorite])
+    TypeOrmModule.forFeature([User, Gender, Role, ShoppingCart, Favorite]),
+    ProductsModule
   ],
   exports: [TypeOrmModule, UsersService]
 })
