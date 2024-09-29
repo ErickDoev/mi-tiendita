@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateGenderDto, CreateRoleDto } from './dto';
+import { CreateGenderDto, CreateRoleDto, UpdateCartDto } from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Favorite, Gender, Role, User } from './entities';
+import { Favorite, Gender, Role, ShoppingCart, User } from './entities';
 import { Repository } from 'typeorm';
 import * as  bcrypt from 'bcrypt';
 import { UpdateWishListDto } from './dto/update-wish-list.dto';
@@ -26,6 +26,8 @@ export class UsersService {
     private readonly favoriteRepository: Repository<Favorite>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(ShoppingCart)
+    private readonly shoppingCartRepository: Repository<ShoppingCart>,
     private readonly producService: ProductsService
   ) {}
 
@@ -117,6 +119,26 @@ export class UsersService {
       });
       
       return this.favoriteRepository.save(createrFavorite);
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async updateCart(updateCartDto: UpdateCartDto,  userId: string) {
+    const { variantId, productId, quantity } = updateCartDto;
+    try {
+      const userDB = await this.findUser(userId);
+      const productDB = await this.producService.findOneProduct(productId);
+      const variant = await this.producService.findOneVariant(variantId);
+      const productVariant = await this.producService.findOneProductVariant(productDB, variant);
+
+      const createCartItem = this.shoppingCartRepository.create({
+        user: userDB,
+        productVariant,
+        quantity
+      });
+      
+      return this.shoppingCartRepository.save(createCartItem);
     } catch (error) {
       this.handleDBerrors(error);
     }

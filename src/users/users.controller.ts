@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateGenderDto, CreateRoleDto } from './dto';
+import { CreateGenderDto, CreateRoleDto, UpdateCartDto } from './dto';
 import { UpdateWishListDto } from './dto/update-wish-list.dto';
 
 @Controller('users')
@@ -37,6 +37,11 @@ export class UsersController {
   @Post(':id/favorite')
   updateWishList(@Body() updateWishListDto: UpdateWishListDto) {
     return this.usersService.updateWishList(updateWishListDto);
+  }
+
+  @Post(':userId/shopping-cart')
+  updateShoppingCart(@Body() updateCartDto: UpdateCartDto,  @Param('userId', ParseUUIDPipe) userId: string ) {
+    return this.usersService.updateCart(updateCartDto, userId);
   }
 
   @Patch(':id')
