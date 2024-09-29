@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import * as  bcrypt from 'bcrypt';
 import { UpdateWishListDto } from './dto/update-wish-list.dto';
 import { ProductsService } from 'src/products/products.service';
+import { Product } from 'src/products/entities';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,8 @@ export class UsersService {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(Favorite)
     private readonly favoriteRepository: Repository<Favorite>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
     private readonly producService: ProductsService
   ) {}
 
@@ -119,19 +122,30 @@ export class UsersService {
     }
   }
 
-  async findUserFavorites(id: string) {
+  async findUserFavorites(userId: string) {
     try {
-      //TODO: checar y mejorar esto
-      const user = await this.findUser(id);
-      const favs = await this.favoriteRepository.find({
-        where: {
-          user
-        },
-        relations: {
-          productVariant: true
-        }
-      });
-      return favs;
+      const products = await this.productRepository
+        .createQueryBuilder('p')
+        .innerJoinAndSelect('p.brand', 'b') // Relación con brands
+        .innerJoinAndSelect('p.product_variants', 'pv') // Relación con product_variants
+        .innerJoinAndSelect('pv.variant', 'v') // Relación con variants
+        .innerJoinAndSelect('pv.favorite', 'f') // Relación con favorites
+        .innerJoinAndSelect('f.user', 'u') // Relación con users a través de favorites
+        .select([
+          'p.product_id',       // Campos de products
+          'p.product_name',
+          'p.price',
+          'b.brand_name',       // Campo de brands
+          'v.variant_name',     // Campo de variants
+          'pv.stock',           // Campo de product_variants
+          'u.user_id',          // Campo de users
+          'u.user_name'
+        ])
+        .where('u.user_id = :userId', { userId }) // Condición WHERE para filtrar por el user_id
+        .orderBy('p.product_name')
+        .getMany();
+      
+      return products;
     } catch (error) {
       this.handleDBerrors(error);
     }
