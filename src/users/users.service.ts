@@ -174,6 +174,35 @@ export class UsersService {
     }
   }
 
+  async findUserProductsCart(userId: string) {
+    try {
+      const products = await this.productRepository
+        .createQueryBuilder('p')
+        .innerJoinAndSelect('p.brand', 'b') // Relación con brands
+        .innerJoinAndSelect('p.product_variants', 'pv') // Relación con product_variants
+        .innerJoinAndSelect('pv.variant', 'v') // Relación con variants
+        .innerJoinAndSelect('pv.shoppingCart', 's') // Relación con favorites
+        .innerJoinAndSelect('s.user', 'u') // Relación con users a través de favorites
+        .select([
+          'p.product_id',       // Campos de products
+          'p.product_name',
+          'p.price',
+          'b.brand_name',       // Campo de brands
+          'v.variant_id',
+          'v.variant_name',     // Campo de variants
+          'pv.stock',           // Campo de product_variants
+          'p.price'
+        ])
+        .where('u.user_id = :userId', { userId }) // Condición WHERE para filtrar por el user_id
+        .orderBy('p.product_name')
+        .getRawMany();
+      
+      return products;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
   async removeUserFavorite(userId: string, productId: string, variantId: string) {
     try {
       const userDB = await this.findUser(userId);

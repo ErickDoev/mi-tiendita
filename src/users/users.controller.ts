@@ -44,6 +44,11 @@ export class UsersController {
     return this.usersService.updateCart(updateCartDto, userId);
   }
 
+  @Get(':userId/shopping-cart')
+  findUserProductsCart(@Param('userId', ParseUUIDPipe) userId: string ) {
+    return this.usersService.findUserProductsCart(userId);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
