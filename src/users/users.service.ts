@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import * as  bcrypt from 'bcrypt';
 import { UpdateWishListDto } from './dto/update-wish-list.dto';
 import { ProductsService } from 'src/products/products.service';
-import { Product } from 'src/products/entities';
+import { Product, ProductVariant } from 'src/products/entities';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +26,8 @@ export class UsersService {
     private readonly favoriteRepository: Repository<Favorite>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(ProductVariant)
+    private readonly productVariantRepository: Repository<ProductVariant>,
     @InjectRepository(ShoppingCart)
     private readonly shoppingCartRepository: Repository<ShoppingCart>,
     private readonly producService: ProductsService
@@ -211,6 +213,21 @@ export class UsersService {
       const pv = await this.producService.findOneProductVariant(productDB, variantDB);
 
       const res = this.favoriteRepository.delete({ user: userDB, productVariant: pv});
+
+      return res;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async removeProductShoppingCart(userId: string, shoppinCartProduct: string) {
+    try {
+      const userDB = await this.findUser(userId);
+      const pv = await this.shoppingCartRepository.findOneBy({ shopping_cart_id: shoppinCartProduct});
+      console.log('PV :: ', pv);
+      
+      if(!pv) throw new NotFoundException(`Product whit id ${shoppinCartProduct} not found`);
+      const res = this.shoppingCartRepository.delete({ user: userDB, shopping_cart_id: shoppinCartProduct });
 
       return res;
     } catch (error) {

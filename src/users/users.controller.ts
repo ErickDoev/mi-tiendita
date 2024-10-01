@@ -49,6 +49,11 @@ export class UsersController {
     return this.usersService.findUserProductsCart(userId);
   }
 
+  @Delete(':userId/shopping-cart/:shoppinCartProduct/delete')
+  removeProductCart(@Param('userId', ParseUUIDPipe)userId: string, @Param('shoppinCartProduct', ParseUUIDPipe) shoppinCartProduct: string) {
+    return this.usersService.removeProductShoppingCart(userId, shoppinCartProduct);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
