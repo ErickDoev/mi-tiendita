@@ -3,8 +3,9 @@ import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Country } from './entities';
+import { Country, State } from './entities';
 import { Repository } from 'typeorm';
+import { CreateStateDto } from './dto';
 
 @Injectable()
 export class AddressesService {
@@ -13,7 +14,9 @@ export class AddressesService {
 
   constructor(
     @InjectRepository(Country)
-    private readonly countryRepository: Repository<Country>
+    private readonly countryRepository: Repository<Country>,
+    @InjectRepository(State)
+    private readonly stateRepository: Repository<State>
   ){}
 
   create(createAddressDto: CreateAddressDto) {
@@ -38,7 +41,7 @@ export class AddressesService {
 
   async createCountry(createCountryDto: CreateCountryDto) {
     try {
-      const createCountry = this.countryRepository.create(createCountryDto);
+      const createCountry = this.countryRepository.create({country_name: createCountryDto.countryName});
       return await this.countryRepository.save(createCountry);
     } catch (error) {
       this.handleDBerrors(error);
@@ -59,6 +62,39 @@ export class AddressesService {
     try {
       const countryiesDB = await this.countryRepository.find();
       return countryiesDB;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async createState(createStateDto: CreateStateDto) {
+    const { stateName, countryId } = createStateDto;
+    try {
+      const countryDB = await this.findOneCountry(countryId);
+      const createState = this.stateRepository.create({
+        state_name: stateName,
+        country: countryDB
+      });
+      return await this.stateRepository.save(createState);
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async findOneState(id: string) {
+    try {
+      const stateDB = await this.stateRepository.findOneBy({ state_id: id });
+      if(!stateDB) throw new NotFoundException(`State with id ${ id } not found`);
+      return stateDB;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async findAllStates() {
+    try {
+      const statesDB = await this.stateRepository.find();
+      return statesDB;
     } catch (error) {
       this.handleDBerrors(error);
     }
