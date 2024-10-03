@@ -28,6 +28,11 @@ export class AddressesController {
     return this.addressesService.update(+id, updateAddressDto);
   }
 
+  @Post() 
+  createAddredd(@Body() createAddressDto:CreateAddressDto) {
+    return this.addressesService.create(createAddressDto);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.addressesService.remove(+id);

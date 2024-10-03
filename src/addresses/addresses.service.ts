@@ -3,9 +3,10 @@ import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Country, State } from './entities';
+import { Address, Country, State } from './entities';
 import { Repository } from 'typeorm';
 import { CreateStateDto } from './dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AddressesService {
@@ -16,11 +17,41 @@ export class AddressesService {
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
     @InjectRepository(State)
-    private readonly stateRepository: Repository<State>
+    private readonly stateRepository: Repository<State>,
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
+    private readonly userService: UsersService
   ){}
 
-  create(createAddressDto: CreateAddressDto) {
-    return 'This action adds a new address';
+  async create(createAddressDto: CreateAddressDto) {
+    const { 
+      address, 
+      addressExtra,
+      country, 
+      state, 
+      city, 
+      cp,
+      addressPhone, 
+      user
+    } = createAddressDto;
+    try {
+      const countrDB = await this.findOneCountry(country);
+      const stateDB = await this.findOneState(state);
+      const userDB = await this.userService.findUser(user);
+      const createAddress = this.addressRepository.create({
+        address,
+        address_extra: addressExtra,
+        country: countrDB,
+        state: stateDB,
+        city,
+        cp,
+        address_phone: addressPhone,
+        user: userDB
+      });
+      return await this.addressRepository.save(createAddress);
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
   }
 
   findAll() {
