@@ -9,8 +9,8 @@ export class FilesController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file', {
+    limits: { fileSize: 1 * 1024 * 1024 }, 
     fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 }, 
   }))
   uploadProductImage(
     @UploadedFile() file: Express.Multer.File
@@ -21,8 +21,8 @@ export class FilesController {
 
   @Post('product')
   @UseInterceptors(FilesInterceptor('images', 5, {
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter
+    limits: { fileSize: 1 * 1024 * 1024 },
+    fileFilter,
   }))
   uploadProductImages(
     @UploadedFiles() images: Express.Multer.File[]

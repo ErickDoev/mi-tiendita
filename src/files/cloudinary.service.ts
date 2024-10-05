@@ -41,6 +41,7 @@ export class CloudinaryService {
                     return cloudinary.uploader.upload(`data:image/png;base64,${ base64Image }`, {
                         folder: 'mi-tiendita',
                         resource_type: 'image',
+                        allowed_formats: ['jpg','png','gif']
                     })
                         .then(res => res.secure_url);
                 } catch (error) {
