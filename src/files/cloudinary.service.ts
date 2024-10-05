@@ -13,22 +13,21 @@ export class CloudinaryService {
     }
 
     async uploadFile(file: Express.Multer.File) {
-        return new Promise(async(resolve, reject) => {
+        try {
             const buffer = file.buffer;
             const base64Image = Buffer.from(buffer).toString('base64');
     
-            cloudinary.uploader.upload(`data:image/png;base64,${base64Image}`, {
+            const url = await cloudinary.uploader.upload(`data:image/png;base64,${base64Image}`, {
                 folder: 'mi-tiendita',
                 resource_type: 'image',
-            },(error, result) => {
-                if(error) {
-                    reject(error);
-                } else {
-                    resolve({
-                        secure_url: result.secure_url
-                    });
-                }
-            },)
-        })
+            });
+            
+            return {
+                secure_url: url.secure_url,
+                created_at: url.created_at
+            }
+        } catch (error) {
+            console.log(error);
+        }
      }
 }
