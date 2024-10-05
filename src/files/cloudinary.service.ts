@@ -17,11 +17,11 @@ export class CloudinaryService {
             const buffer = file.buffer;
             const base64Image = Buffer.from(buffer).toString('base64');
     
-            const url = await cloudinary.uploader.upload(`data:image/png;base64,${base64Image}`, {
+            const url = await cloudinary.uploader.upload(`data:image/png;base64,${ base64Image }`, {
                 folder: 'mi-tiendita',
                 resource_type: 'image',
             });
-            
+
             return {
                 secure_url: url.secure_url,
                 created_at: url.created_at
@@ -29,5 +29,31 @@ export class CloudinaryService {
         } catch (error) {
             console.log(error);
         }
-     }
+    }
+
+    async uploadManyFiles(images: Express.Multer.File[]) {
+        try {
+            const imagePromises = images.map(image => {
+                try {
+                    const buffer = image.buffer;
+                    const base64Image = Buffer.from(buffer).toString('base64');
+
+                    return cloudinary.uploader.upload(`data:image/png;base64,${ base64Image }`, {
+                        folder: 'mi-tiendita',
+                        resource_type: 'image',
+                    })
+                        .then(res => res.secure_url);
+                } catch (error) {
+                    console.log('ERROR :: ', error);
+                    return null;
+                }
+            });
+
+            const uploadedImages = await Promise.all(imagePromises);
+            return uploadedImages;
+
+        } catch (error) {
+            console.log('ERROR2 :: ',error);
+        }
+    }
 }
