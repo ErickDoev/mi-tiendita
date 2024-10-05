@@ -26,8 +26,6 @@ export class UsersService {
     private readonly favoriteRepository: Repository<Favorite>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-    @InjectRepository(ProductVariant)
-    private readonly productVariantRepository: Repository<ProductVariant>,
     @InjectRepository(ShoppingCart)
     private readonly shoppingCartRepository: Repository<ShoppingCart>,
     private readonly producService: ProductsService
@@ -35,11 +33,15 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const { gender, userName, firstLastName, secondLastName, phoneNumber, email, password, ...rest } = createUserDto;
-
+    console.log(gender);
+    
     try {
-      const genderDB = await this.genderRepository.findOneBy({ gender_id: gender });
+      const genderDB = await this.genderRepository.findOne({
+        where: { gender_name: 'none' }
+      });
       if(!genderDB) throw new NotFoundException(`Gender whit id ${ gender } not found`);
-
+      console.log(genderDB);
+      
       const roleDB = await this.roleRepository.findOne({
         where: { role_name: 'user' }
       });
@@ -55,12 +57,13 @@ export class UsersService {
         last_conection: new Date(),
         is_active: true,
         email: email,
-        password: bcrypt.hashSync(password, 10 ),
+        password: bcrypt.hashSync(password, 10),
         role: roleDB,
         ...rest
       });
-
-      return await this.userRepository.save(createUser);
+      const userDB = await this.userRepository.save(createUser);
+      delete userDB.password;
+      return userDB;
       
     } catch (error) {
       this.handleDBerrors(error);

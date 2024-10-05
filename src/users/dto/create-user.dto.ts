@@ -17,7 +17,7 @@ export class CreateUserDto {
     secondLastName: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @MinLength(10)
     phoneNumber: string;
 
@@ -34,6 +34,6 @@ export class CreateUserDto {
     password: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     gender: string;
 }

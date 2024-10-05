@@ -18,7 +18,7 @@ export class User {
     @Column('varchar')
     second_last_name: string;
 
-    @Column('varchar')
+    @Column('varchar', { nullable: true })
     phone_number: string;
 
     @Column('timestamp')
