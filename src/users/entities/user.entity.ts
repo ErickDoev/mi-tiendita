@@ -38,6 +38,11 @@ export class User {
     @Column('varchar')
     password: string;
 
+    @Column('boolean', {
+        default: false
+    })
+    acceptMarketing: boolean;
+
     @ManyToOne(() => Gender, (gender) => gender.user)
     @JoinColumn({ name: 'gender_id' })
     gender: Gender;

@@ -86,6 +86,7 @@ export class UsersService {
           birthday: true,
           email: true,
           phone_number: true,
+          acceptMarketing: true
         },
         relations: {
           gender: true
@@ -263,6 +264,15 @@ export class UsersService {
         gender_name: genderName
       });
       return await this.genderRepository.save(createGender);
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async findAllGenders() {
+    try {
+      const gendersDB = this.genderRepository.find();
+      return gendersDB;
     } catch (error) {
       this.handleDBerrors(error);
     }
