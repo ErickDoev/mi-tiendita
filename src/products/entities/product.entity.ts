@@ -3,6 +3,7 @@ import { ProductVariant } from "./product-variant";
 import { Brand } from "./brand";
 import { Category } from "./category";
 import { Image } from "./image";
+import { ProductVariantSize } from "./product-variant-sizes";
 
 @Entity('products')
 export class Product {
@@ -28,6 +29,9 @@ export class Product {
 
     @OneToMany(() => ProductVariant, (pv) => pv.product, { cascade: true, eager: true })
     product_variants: ProductVariant[];
+
+    @OneToMany(() => ProductVariantSize, (pv) => pv.product, { cascade: true, eager: true })
+    productVariantSizes: ProductVariantSize[];
 
     @ManyToOne(() => Brand, (brand) => brand.products)
     @JoinColumn({ name: 'brand_id' })

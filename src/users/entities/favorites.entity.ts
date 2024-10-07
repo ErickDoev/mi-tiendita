@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from ".";
-import { ProductVariant } from "src/products/entities";
+import { ProductVariant, ProductVariantSize } from "src/products/entities";
 
 @Entity('favorites')
 export class Favorite {
@@ -15,6 +15,7 @@ export class Favorite {
     @JoinColumn({ name: 'product_variant_id' })
     productVariant: ProductVariant;
 
-    // @Column('int')
-    // quantity: number;
+    @ManyToOne(() => ProductVariantSize, (pv) => pv.favorite)
+    @JoinColumn({ name: 'product_variant_size_id' })
+    productVariantSize: ProductVariantSize;
 }

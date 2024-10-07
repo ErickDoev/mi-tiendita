@@ -8,7 +8,9 @@ import {
   ProductVariant, 
   Category, 
   Brand, 
-  Image 
+  Image, 
+  ProductVariantSize,
+  Size
 } from './entities/';
 import { UsersModule } from 'src/users/users.module';
 
@@ -20,9 +22,11 @@ import { UsersModule } from 'src/users/users.module';
       Product,
       Variant,
       ProductVariant,
+      ProductVariantSize,
       Category,
       Brand,
-      Image
+      Image,
+      Size
     ])
   ],
   exports: [
