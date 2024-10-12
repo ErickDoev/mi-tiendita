@@ -60,7 +60,7 @@ export class ProductsController {
   createProductVariant(
     @Body() createProductVariantDto: CreateProductVariantDto
   ){
-    return this.productsService.createProductVariant(createProductVariantDto);
+    return this.productsService.createProductVariantSize(createProductVariantDto);
   }
 
   @Post(':id/add/image')

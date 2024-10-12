@@ -8,7 +8,7 @@ import { Repository } from 'typeorm';
 import * as  bcrypt from 'bcrypt';
 import { UpdateWishListDto } from './dto/update-wish-list.dto';
 import { ProductsService } from 'src/products/products.service';
-import { Product, ProductVariant } from 'src/products/entities';
+import { Product } from 'src/products/entities';
 
 @Injectable()
 export class UsersService {
@@ -112,16 +112,18 @@ export class UsersService {
   }
 
   async updateWishList(updateListWishDto: UpdateWishListDto) {
-    const { userId, variantId, productId } = updateListWishDto;
+    const { userId, variantId, sizeId, productId } = updateListWishDto;
     try {
       const userDB = await this.findUser(userId);
       const productDB = await this.producService.findOneProduct(productId);
       const variant = await this.producService.findOneVariant(variantId);
-      const productVariant = await this.producService.findOneProductVariant(productDB, variant);
+      const size = await this.producService.findOneSize(variantId);
+
+      const productVariantSize = await this.producService.findOneProductVariantSize(productDB, variant, size);
 
       const createrFavorite = this.favoriteRepository.create({
         user: userDB,
-        productVariant
+        productVariantSize
       });
       
       return this.favoriteRepository.save(createrFavorite);
@@ -135,12 +137,14 @@ export class UsersService {
     try {
       const userDB = await this.findUser(userId);
       const productDB = await this.producService.findOneProduct(productId);
-      const variant = await this.producService.findOneVariant(variantId);
-      const productVariant = await this.producService.findOneProductVariant(productDB, variant);
+      const variantDB = await this.producService.findOneVariant(variantId);
+      const sizeDB = await this.producService.findOneSize(variantId);
+
+      const productVariantSizeDB = await this.producService.findOneProductVariantSize(productDB, variantDB, sizeDB);
 
       const createCartItem = this.shoppingCartRepository.create({
         user: userDB,
-        productVariant,
+        productVariantSize: productVariantSizeDB,
         quantity
       });
       
@@ -214,9 +218,10 @@ export class UsersService {
       const userDB = await this.findUser(userId);
       const productDB = await this.producService.findOneProduct(productId);
       const variantDB = await this.producService.findOneVariant(variantId);
-      const pv = await this.producService.findOneProductVariant(productDB, variantDB);
+      const sizeDB = await this.producService.findOneSize(variantId);
+      const pvs = await this.producService.findOneProductVariantSize(productDB, variantDB, sizeDB);
 
-      const res = this.favoriteRepository.delete({ user: userDB, productVariant: pv});
+      const res = this.favoriteRepository.delete({ user: userDB, productVariantSize: pvs});
 
       return res;
     } catch (error) {

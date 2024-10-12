@@ -4,8 +4,7 @@ import { ProductsService } from './products.service';
 import { ProductsController } from './products.controller';
 import { 
   Product, 
-  Variant, 
-  ProductVariant, 
+  Variant,
   Category, 
   Brand, 
   Image, 
@@ -21,7 +20,6 @@ import { UsersModule } from 'src/users/users.module';
     TypeOrmModule.forFeature([
       Product,
       Variant,
-      ProductVariant,
       ProductVariantSize,
       Category,
       Brand,

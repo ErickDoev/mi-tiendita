@@ -10,6 +10,9 @@ export class CreateProductVariantDto {
     @IsString()
     variant: string;
 
+    @IsString()
+    size: string;
+
     @IsArray()
     @IsString({ each: true })
     images: string[];

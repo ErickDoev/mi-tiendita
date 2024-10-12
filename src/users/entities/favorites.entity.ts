@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from ".";
-import { ProductVariant, ProductVariantSize } from "src/products/entities";
+import { ProductVariantSize } from "src/products/entities";
 
 @Entity('favorites')
 export class Favorite {
@@ -10,10 +10,6 @@ export class Favorite {
     @ManyToOne(() => User, (user) => user.favorite)
     @JoinColumn({ name: 'user_id' })
     user: User;
-
-    @ManyToOne(() => ProductVariant, (pv) => pv.favorite)
-    @JoinColumn({ name: 'product_variant_id' })
-    productVariant: ProductVariant;
 
     @ManyToOne(() => ProductVariantSize, (pv) => pv.favorite)
     @JoinColumn({ name: 'product_variant_size_id' })

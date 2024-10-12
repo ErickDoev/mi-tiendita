@@ -7,7 +7,7 @@ import { OrderProduct } from "src/orders/entities/order_products.entity";
 import { Size } from "./size";
 
 @Entity('product_variant_sizes')
-@Unique(['product', 'variant'])
+@Unique(['product', 'variant', 'size'])
 export class ProductVariantSize {
 
     @PrimaryGeneratedColumn('uuid')

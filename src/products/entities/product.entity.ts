@@ -1,5 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
-import { ProductVariant } from "./product-variant";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Brand } from "./brand";
 import { Category } from "./category";
 import { Image } from "./image";
@@ -27,8 +26,8 @@ export class Product {
     @Column('timestamp')
     last_updated: Date;
 
-    @OneToMany(() => ProductVariant, (pv) => pv.product, { cascade: true, eager: true })
-    product_variants: ProductVariant[];
+    // @OneToMany(() => ProductVariant, (pv) => pv.product, { cascade: true, eager: true })
+    // product_variants: ProductVariant[];
 
     @OneToMany(() => ProductVariantSize, (pv) => pv.product, { cascade: true, eager: true })
     productVariantSizes: ProductVariantSize[];

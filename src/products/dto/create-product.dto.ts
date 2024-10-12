@@ -17,6 +17,10 @@ export class CreateProductDto {
     @IsString()
     @IsNotEmpty()
     variant: string;
+
+    @IsString()
+    @IsNotEmpty()
+    size: string;
     
     @IsString()
     brand: string;

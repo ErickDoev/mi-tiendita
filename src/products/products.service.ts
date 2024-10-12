@@ -6,7 +6,9 @@ import {
   Category, 
   Image, 
   Product, 
-  ProductVariant, 
+  ProductVariantSize, 
+  // ProductVariant, 
+  Size, 
   Variant 
 } from './entities';
 import { 
@@ -30,8 +32,10 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Variant)
     private readonly variantRepository: Repository<Variant>,
-    @InjectRepository(ProductVariant)
-    private readonly productVariantRepository: Repository<ProductVariant>,
+    @InjectRepository(Size)
+    private readonly sizeRepository: Repository<Size>,
+    @InjectRepository(ProductVariantSize)
+    private readonly productVariantSizeRepository: Repository<ProductVariantSize>,
     @InjectRepository(Brand)
     private readonly brandRepository: Repository<Brand>,
     @InjectRepository(Category)
@@ -41,7 +45,7 @@ export class ProductsService {
   ) {}
   async create(createProductDto: CreateProductDto) {
 
-    const { brand, category, variant, images = [], stock, productName, ...rest } = createProductDto;
+    const { brand, category, variant, images = [], stock, productName, size, ...rest } = createProductDto;
 
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -50,13 +54,9 @@ export class ProductsService {
     try {
       // Buscamos si existe el brand a insertar
       const brandDB = await this.findOneBrand(brand);
-      if(!brandDB) throw new NotFoundException(`Brand whit id ${ variant } not found`);
-      // Buscamos si existe la category a insertar
       const categoryDB = await this.findOneCategory(category);
-      if(!categoryDB) throw new NotFoundException(`Category whit id ${ category } not found`);
-      // Buscamos si existe la variante a insertar
       const variantDB = await this.findOneVariant(variant);
-      if(!variantDB) throw new NotFoundException(`Variant whit id ${ variant } not found`);
+      const sizeDB = await this.findOneSize(size);
       // Creamos el producto
       const createProduct = queryRunner.manager.create(Product ,{
         ...rest,
@@ -69,22 +69,24 @@ export class ProductsService {
       // Cargamos el productos en base de datos
       const productDB = await queryRunner.manager.save(Product ,createProduct);
       //Buscamos si el producto ya tiene una categoria previamente cargada
-      const existingProductVariant = await queryRunner.manager.findOne(ProductVariant, {
+      const existingProductVariantSize = await queryRunner.manager.findOne(ProductVariantSize, {
         where: {
           product: productDB,
-          variant: variantDB
+          variant: variantDB,
+          size: sizeDB
         }
       });
       // Si existe el producto con la categoria lanzamos un error
-      if(existingProductVariant) throw new ConflictException(`Product with id ${productDB.product_id} and variant ${variant} already exists`);
+      if(existingProductVariantSize) throw new ConflictException(`Product with id ${productDB.product_id} and variant ${variant} already exists`);
       // Creamos la variante a insertar
-      const createProductVariant = queryRunner.manager.create(ProductVariant, {
+      const createProductVariant = queryRunner.manager.create(ProductVariantSize, {
         stock: stock,
         variant: variantDB,
         product: productDB,
+        size: sizeDB
       });
       // Cargamos la variante con las imagenes en BD
-      const productVariantDB = await queryRunner.manager.save(ProductVariant, createProductVariant);
+      const productVariantDB = await queryRunner.manager.save(ProductVariantSize, createProductVariant);
 
       if (images && images.length > 0) {
         for (const imageUrl of images) {
@@ -112,9 +114,9 @@ export class ProductsService {
   async findAll() {
     const products = await this.productRepository
       .createQueryBuilder('p')
-      .innerJoinAndSelect('p.product_variants', 'pv') // Relación con product_variants
-      .innerJoinAndSelect('pv.variant', 'v') // Relación con variants
-      .innerJoinAndSelect('pv.images','i')
+      .innerJoinAndSelect('p.product_variant_sizes', 'pvs') // Relación con product_variants
+      .innerJoinAndSelect('pvs.variant', 'v') // Relación con variants
+      .innerJoinAndSelect('pvs.images','i')
       .select([
         'p.product_id', // Campos de la tabla products
         'p.product_name',
@@ -122,7 +124,7 @@ export class ProductsService {
         'p.description',
         'p.is_active',
         'v.variant_name', // Campos de la tabla variants
-        'pv.stock', // Campo de la tabla product_variants
+        'pvs.stock', // Campo de la tabla product_variants
         'i.image_url'
       ])
       .orderBy('p.product_id')
@@ -134,9 +136,9 @@ export class ProductsService {
   async findOne(id: string) {
     const products = await this.productRepository
       .createQueryBuilder('p')
-      .innerJoinAndSelect('p.product_variants', 'pv') // Relación con product_variants
-      .innerJoinAndSelect('pv.variant', 'v') // Relación con variants
-      .innerJoinAndSelect('pv.images','i')
+      .innerJoinAndSelect('p.product_variant_sizes', 'pvs') // Relación con product_variants
+      .innerJoinAndSelect('pvs.variant', 'v') // Relación con variants
+      .innerJoinAndSelect('pvs.images','i')
       .select([
         'p.product_id', // Campos de la tabla products
         'p.product_name',
@@ -144,9 +146,9 @@ export class ProductsService {
         'p.description',
         'p.is_active',
         'v.variant_name', // Campos de la tabla variants
-        'pv.stock', // Campo de la tabla product_variants
+        'pvs.stock', // Campo de la tabla product_variants
         'i.image_url',
-        'pv.product_variant_id'
+        'pvs.product_variant_size_id'
       ])
       .where('p.product_id = :id', { id })
       .orderBy('p.product_id')
@@ -187,7 +189,10 @@ export class ProductsService {
 
   async findOneBrand(id: string) {
     try {
-      return await this.brandRepository.findOneBy({ brand_id: id });
+      const brandDB = this.brandRepository.findOneBy({ brand_id: id });
+      if(!brandDB) throw new NotFoundException(`Brand with id ${id} not found`);
+
+      return brandDB;
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -205,7 +210,10 @@ export class ProductsService {
 
   async findOneCategory(id: string) {
     try {
-      return await this.categoryRepository.findOneBy({ category_id: id });
+      const categoryDB = await this.categoryRepository.findOneBy({ category_id: id });
+      if(!categoryDB) throw new NotFoundException(`Category with id ${id} not found`);
+
+      return categoryDB;
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -231,8 +239,18 @@ export class ProductsService {
     }
   }
 
-  async createProductVariant(createProductVariantDto: CreateProductVariantDto) {
-    const { variant, product, images, stock } = createProductVariantDto;
+  async findOneSize(id: string) {
+    try {
+      const sizeDB =  await this.sizeRepository.findOneBy({ size_id: id });
+      if(!sizeDB) throw new NotFoundException(`Size with id ${id} not found`);
+      return sizeDB;
+    } catch (error) {
+      this.handleDBerrors(error);
+    }
+  }
+
+  async createProductVariantSize(createProductVariantDto: CreateProductVariantDto) {
+    const { variant, product, images, stock, size } = createProductVariantDto;
 
     const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -246,22 +264,27 @@ export class ProductsService {
       const productDB = await queryRunner.manager.findOne(Product, { where: { product_id: product }});
       if(!productDB) throw new NotFoundException(`Product whit id ${ variant } not found`);
 
-      const existingProductVariant = await queryRunner.manager.findOne(ProductVariant, {
+      const sizeDB = await queryRunner.manager.findOne(Size, { where: { size_id: size }});
+      if(!sizeDB) throw new NotFoundException(`Size whit id ${ sizeDB } not found`);
+
+      const existingProductVariant = await queryRunner.manager.findOne(ProductVariantSize, {
         where: {
           product: productDB,
-          variant: variantDB
+          variant: variantDB,
+          size: sizeDB
         }
       });
 
       if(existingProductVariant) throw new ConflictException(`Product with id ${product} and variant ${variant} already exists`);
       
-      const createProductVariant = queryRunner.manager.create(ProductVariant, {
+      const createProductVariantSize = queryRunner.manager.create(ProductVariantSize, {
         stock: stock,
         variant: variantDB,
         product: productDB,
+        size: sizeDB
       });
 
-      const productVariantDB = await queryRunner.manager.save(ProductVariant, createProductVariant);
+      const productVariantDB = await queryRunner.manager.save(ProductVariantSize, createProductVariantSize);
 
       if (images && images.length > 0) {
         for (const imageUrl of images) {
@@ -289,12 +312,13 @@ export class ProductsService {
     }
   }
 
-  async findOneProductVariant(product: Product, variant: Variant) {
+  async findOneProductVariantSize(product: Product, variant: Variant, size: Size) {
    try {
-    const productVariant = await this.productVariantRepository.findOne({
+    const productVariant = await this.productVariantSizeRepository.findOne({
       where: {
         product,
-        variant
+        variant,
+        size
       }
     });
     if(!productVariant) throw new NotFoundException(`Product with variant ${ variant } not found`);
@@ -313,20 +337,20 @@ export class ProductsService {
     await queryRunner.startTransaction();
 
     try {
-      const productVariantBD = await queryRunner.manager.findOne(ProductVariant, { where: { product_variant_id: id }});
-      if(!productVariantBD) throw new NotFoundException(`Product Variant whit id ${ id } not found`);
+      const productVariantSizeBD = await queryRunner.manager.findOne(ProductVariantSize, { where: { product_variant_size_id: id }});
+      if(!productVariantSizeBD) throw new NotFoundException(`Product Variant whit id ${ id } not found`);
 
       if (images && images.length > 0) {
         for (const imageUrl of images) {
           const newImage = queryRunner.manager.create(Image, {
             image_url: imageUrl,
-            product_variant: productVariantBD,
+            product_variant: productVariantSizeBD,
           });
           await queryRunner.manager.save(Image, newImage);
         }
       }
       await queryRunner.commitTransaction();
-      return productVariantBD;
+      return productVariantSizeBD;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       this.handleDBerrors(error);

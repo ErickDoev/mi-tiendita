@@ -13,4 +13,8 @@ export class UpdateWishListDto {
     @IsString()
     @IsNotEmpty()
     variantId: string;
+
+    @IsString()
+    @IsNotEmpty()
+    sizeId: string;
 }
