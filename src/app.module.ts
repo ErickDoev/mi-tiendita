@@ -28,7 +28,6 @@ import { FilesModule } from './files/files.module';
     AddressesModule,
     OrdersModule,
     AuthModule,
-    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

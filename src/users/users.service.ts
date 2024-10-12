@@ -118,14 +118,14 @@ export class UsersService {
       const variant = await this.producService.findOneVariant(variantId);
       const size = await this.producService.findOneSize(variantId);
 
-      const productVariantSize = await this.producService.findOneProductVariantSize(productDB, variant, size);
+      const productVariantSize = await this.producService.findOneProductVariant(productDB, variant);
 
-      const createrFavorite = this.favoriteRepository.create({
-        user: userDB,
-        productVariantSize
-      });
+      // const createrFavorite = this.favoriteRepository.create({
+      //   user: userDB,
+      //   productVariantSize
+      // });
       
-      return this.favoriteRepository.save(createrFavorite);
+      // return this.favoriteRepository.save(createrFavorite);
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -137,17 +137,16 @@ export class UsersService {
       const userDB = await this.findUser(userId);
       const productDB = await this.producService.findOneProduct(productId);
       const variantDB = await this.producService.findOneVariant(variantId);
-      const sizeDB = await this.producService.findOneSize(variantId);
 
-      const productVariantSizeDB = await this.producService.findOneProductVariantSize(productDB, variantDB, sizeDB);
+      const productVariantSizeDB = await this.producService.findOneProductVariant(productDB, variantDB);
 
-      const createCartItem = this.shoppingCartRepository.create({
-        user: userDB,
-        productVariantSize: productVariantSizeDB,
-        quantity
-      });
+      // const createCartItem = this.shoppingCartRepository.create({
+      //   user: userDB,
+      //   productVariantSize: productVariantSizeDB,
+      //   quantity
+      // });
       
-      return this.shoppingCartRepository.save(createCartItem);
+      // return this.shoppingCartRepository.save(createCartItem);
     } catch (error) {
       this.handleDBerrors(error);
     }
@@ -217,12 +216,12 @@ export class UsersService {
       const userDB = await this.findUser(userId);
       const productDB = await this.producService.findOneProduct(productId);
       const variantDB = await this.producService.findOneVariant(variantId);
-      const sizeDB = await this.producService.findOneSize(variantId);
-      const pvs = await this.producService.findOneProductVariantSize(productDB, variantDB, sizeDB);
 
-      const res = this.favoriteRepository.delete({ user: userDB, productVariantSize: pvs});
+      // const pvs = await this.producService.findOneProductVariant(productDB, variantDB);
 
-      return res;
+      // const res = this.favoriteRepository.delete({ user: userDB, productVariantSize: pvs});
+
+      // return res;
     } catch (error) {
       this.handleDBerrors(error);
     }

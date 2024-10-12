@@ -1,37 +1,30 @@
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMinSize, IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { CreateProductVariantDto } from "./create-product-variant.dto";
 
 export class CreateProductDto {
     @IsString()
+    @IsNotEmpty()
     productName: string;
 
     @IsNumber()
-    stock: number;
-
-    @IsNumber()
+    @IsNotEmpty()
     price: number;
 
     @IsString()
     @IsOptional()
     description?: string;
 
-    @IsString()
-    @IsNotEmpty()
-    variant: string;
-
-    @IsString()
-    @IsNotEmpty()
-    size: string;
     
     @IsString()
-    brand: string;
+    brandId: string;
 
     @IsString()
-    category: string;
+    categoryId: string;
 
-    @IsArray()
-    @IsString({
-        each: true
-    })
-    @IsOptional()
-    images: string[];
+    @IsArray({ message: 'Los tamaños deben ser un arreglo.' })
+    @ArrayMinSize(1, { message: 'Debe incluir al menos un tamaño.' })
+    @ValidateNested({ each: true })
+    @Type(() => CreateProductVariantDto)
+    variants: CreateProductVariantDto[];
 }

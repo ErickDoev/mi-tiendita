@@ -1,5 +1,5 @@
 import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { ProductVariantSize } from "./product-variant-sizes";
+import { ProductVariantSize } from "./product-variant-sizes.entity";
 
 @Entity('images')
 @Check(`("product_variant_size_id" IS NOT NULL)`)

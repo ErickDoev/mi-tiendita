@@ -57,12 +57,12 @@ export class ProductsController {
     return this.productsService.createVariant(createVariantDto);
   }
 
-  @Post('add/variant')
-  createProductVariant(
-    @Body() createProductVariantDto: CreateProductVariantDto
-  ){
-    return this.productsService.createProductVariantSize(createProductVariantDto);
-  }
+  // @Post('add/variant')
+  // createProductVariant(
+  //   @Body() createProductVariantDto: CreateProductVariantDto
+  // ){
+  //   return this.productsService.createProductVariant(createProductVariantDto);
+  // }
 
   @Post(':id/add/image')
   createImageProduct(

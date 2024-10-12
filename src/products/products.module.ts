@@ -9,9 +9,11 @@ import {
   Brand, 
   Image, 
   ProductVariantSize,
-  Size
+  Size,
+  ProductVariant
 } from './entities/';
 import { UsersModule } from 'src/users/users.module';
+import { FilesModule } from 'src/files/files.module';
 
 @Module({
   controllers: [ProductsController],
@@ -21,15 +23,17 @@ import { UsersModule } from 'src/users/users.module';
       Product,
       Variant,
       ProductVariantSize,
+      ProductVariant,
       Category,
       Brand,
       Image,
       Size
-    ])
+    ]),
+    FilesModule
   ],
   exports: [
     TypeOrmModule,
-    ProductsService
+    ProductsService,
   ]
 })
 export class ProductsModule {}

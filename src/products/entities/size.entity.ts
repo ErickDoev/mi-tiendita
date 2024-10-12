@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { ProductVariantSize } from './product-variant-sizes';
+import { ProductVariantSize } from './product-variant-sizes.entity';
 
 @Entity('sizes')
 export class Size {

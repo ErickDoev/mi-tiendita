@@ -1,19 +1,14 @@
-import { IsArray, IsNumber, IsString } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMinSize, IsArray, IsString, ValidateNested } from "class-validator";
+import { CreateProductVariantSizeDto } from "./create-product-variant-size.dto";
 
 export class CreateProductVariantDto {
-    @IsNumber()
-    stock: number;
-
     @IsString()
-    product: string;
+    variantId: string;
 
-    @IsString()
-    variant: string;
-
-    @IsString()
-    size: string;
-
-    @IsArray()
-    @IsString({ each: true })
-    images: string[];
+    @IsArray({ message: 'Los tamaños deben ser un arreglo.' })
+    @ArrayMinSize(1, { message: 'Debe incluir al menos un tamaño.' })
+    @ValidateNested({ each: true })
+    @Type(() => CreateProductVariantSizeDto)
+    sizes: CreateProductVariantSizeDto[];
 }

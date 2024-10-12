@@ -4,9 +4,11 @@ import { FilesController } from './files.controller';
 import { CloudinaryService } from './cloudinary.service';
 import { ConfigModule } from '@nestjs/config';
 
+
 @Module({
   controllers: [FilesController],
   providers: [FilesService, CloudinaryService],
-  imports: [ConfigModule]
+  imports: [ConfigModule],
+  exports: [CloudinaryService]
 })
 export class FilesModule {}

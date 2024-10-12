@@ -1,8 +1,9 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Brand } from "./brand";
-import { Category } from "./category";
-import { Image } from "./image";
-import { ProductVariantSize } from "./product-variant-sizes";
+import { Brand } from "./brand.entity";
+import { Category } from "./category.entity";
+import { Image } from "./image.entity";
+import { ProductVariantSize } from "./product-variant-sizes.entity";
+import { ProductVariant } from './product-variant.entity';
 
 @Entity('products')
 export class Product {
@@ -20,17 +21,14 @@ export class Product {
     @Column('text')
     description: string;
 
-    @Column('boolean')
+    @Column('boolean', { default: true })
     is_active: boolean;
 
-    @Column('timestamp')
+    @Column('timestamp', { default: new Date() })
     last_updated: Date;
 
-    // @OneToMany(() => ProductVariant, (pv) => pv.product, { cascade: true, eager: true })
-    // product_variants: ProductVariant[];
-
-    @OneToMany(() => ProductVariantSize, (pv) => pv.product, { cascade: true, eager: true })
-    productVariantSizes: ProductVariantSize[];
+    @OneToMany(() => ProductVariant, (pv) => pv.product, { cascade: true, eager: true })
+    productVariants: ProductVariant[];
 
     @ManyToOne(() => Brand, (brand) => brand.products)
     @JoinColumn({ name: 'brand_id' })

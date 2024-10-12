@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { ProductVariantSize } from "./product-variant-sizes";
+import { ProductVariant } from "./product-variant.entity";
 
 @Entity('variants')
 export class Variant {
@@ -9,6 +9,6 @@ export class Variant {
     @Column('varchar')
     variant_name: string;
 
-    @OneToMany(() => ProductVariantSize, (pv) => pv.variant, { cascade: true, eager: true })
-    productVariantSizes: ProductVariantSize[];
+    @OneToMany(() => ProductVariant, (pv) => pv.variant, { cascade: true, eager: true })
+    productVariants: ProductVariant[];
 }

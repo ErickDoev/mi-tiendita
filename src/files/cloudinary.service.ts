@@ -4,12 +4,28 @@ import { v2 as cloudinary } from 'cloudinary'
 
 @Injectable()
 export class CloudinaryService {
+
     constructor(private configService: ConfigService) {
         cloudinary.config({
             cloud_name: this.configService.get<string>('CLOUDINARY_CLOUD_NAME'),
             api_key: this.configService.get<string>('CLOUDINARY_API_KEY'),
             api_secret: this.configService.get<string>('CLOUDINARY_API_SECRET'),
         });
+    }
+
+    async uploadBase64Img(base64Image: string) {
+        try {   
+            const url = await cloudinary.uploader.upload(`${base64Image}`, {
+                folder: 'mi-tiendita',
+                resource_type: 'image',
+            });
+            return {
+                secure_url: url.secure_url
+            }
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
     }
 
     async uploadFile(file: Express.Multer.File) {

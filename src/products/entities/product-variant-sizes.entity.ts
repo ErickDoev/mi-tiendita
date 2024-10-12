@@ -1,13 +1,12 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
-import { Product } from "./product.entity";
-import { Variant } from "./variant.entity";
-import { Image } from "./image";
+import { Image } from "./image.entity";
 import { Favorite, ShoppingCart } from "src/users/entities";
 import { OrderProduct } from "src/orders/entities/order_products.entity";
-import { Size } from "./size";
+import { Size } from "./size.entity";
+import { ProductVariant } from "./product-variant.entity";
 
 @Entity('product_variant_sizes')
-@Unique(['product', 'variant', 'size'])
+@Unique(['size'])
 export class ProductVariantSize {
 
     @PrimaryGeneratedColumn('uuid')
@@ -16,13 +15,8 @@ export class ProductVariantSize {
     @Column('int')
     stock: number;
 
-    @ManyToOne(() => Product, (product) => product.productVariantSizes)
-    @JoinColumn({ name: 'product_id' })
-    product: Product;
-
-    @ManyToOne(() => Variant, (variant) => variant.productVariantSizes)
-    @JoinColumn({ name: 'variant_id' })
-    variant: Variant;
+    @ManyToOne(() => ProductVariant, productVariant => productVariant.productVariantSizes)
+    productVariant: ProductVariant;
 
     @ManyToOne(() => Size, (size) => size.productVariantSizes)
     @JoinColumn({ name: 'size_id' })
