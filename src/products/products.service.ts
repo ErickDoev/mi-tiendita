@@ -17,7 +17,8 @@ import {
   UpdateProductDto,
   CreateCategoryDto,
   CreateVariantDto,
-  CreateImageDto
+  CreateImageDto,
+  CreateSizeDto
 } from './dto/';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 
@@ -356,6 +357,17 @@ export class ProductsService {
       this.handleDBerrors(error);
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async createSize(createSizeDto: CreateSizeDto) {
+    const { sizeName } = createSizeDto;
+    try {
+      const createSize = this.sizeRepository.create({ size_name: sizeName });
+      const sizeDB = this.sizeRepository.save(createSize);
+      return sizeDB;
+    } catch (error) {
+      this.handleDBerrors(error);
     }
   }
 

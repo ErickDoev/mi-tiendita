@@ -7,7 +7,7 @@ export class Size {
     @PrimaryGeneratedColumn('uuid')
     size_id: string;
 
-    @Column()
+    @Column('varchar', { unique: true })
     size_name: string;
 
 

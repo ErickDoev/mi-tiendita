@@ -5,7 +5,8 @@ import {
   UpdateProductDto, 
   CreateBrandDto,
   CreateVariantDto,
-  CreateImageDto
+  CreateImageDto,
+  CreateSizeDto
 } from './dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
@@ -69,5 +70,10 @@ export class ProductsController {
     @Body() createImageDto: CreateImageDto
   ){
     return this.productsService.createImage(id, createImageDto);
+  }
+
+  @Post('size')
+  createSize(@Body() createSizeDto: CreateSizeDto) {
+    return this.productsService.createSize(createSizeDto);
   }
 }
