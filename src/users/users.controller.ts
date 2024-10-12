@@ -66,17 +66,7 @@ export class UsersController {
 
   @Post('gender')
   createGender(@Body() createGenderDto: CreateGenderDto) {
-    return this.usersService.createGender(createGenderDto);
-  }
-
-  @Get('gender')
-  findAllGenders() {
-    return this.usersService.findAllGenders();
-  }
-
-  @Get()
-  getAllGenders() {
-
+    this.usersService.createGender(createGenderDto);
   }
 
   @Post('role')
